@@ -18,41 +18,32 @@ class UserRouter{
             })
         });
 
-        this.router.get('/users/getusers', async (req,res)=>{
-            try{
-                const getUsers = await Users.find();
-                if(!getUsers) throw new Error('No se logró establecer conexión con la base de datos');
-                if(getUsers.length == 0) throw new Error("No existen registros en la base de datos")
-                res.status(200).send({message:"Usuarios encontrados...", users:getUsers})
-            }catch(error){
-                res.status(400).send({message:"Error con obtener los registros en la base de datos", err:error.message})
-            }
-
-        })
+        this.router.get('/users/getusers', this.controller.getUsers)
     
-        this.router.post('/users/signup', async (req,res)=>{
+        this.router.post('/users/signup', this.controller.register);
+
+        this.router.put('/users/modify/:id', async (req,res)=>{
+
             try{
-                
-                const {username,password,email} = req.body;
-                
-                if(!username || !password || !email){ 
-                    throw new Error("Todos los campos son requeridos");
-                }
+                const id = req.params.id;
 
-                const newuser = await Users.create({username,password,email});
-                
-                if(!newuser) throw new Error("No se logro crear el registro");
-
-                res.status(200).send({message:"Registro creado con éxito.", newuser});
-
-            }catch(error){
-                res.status(400).send({message:"No fue posible registrar el usuario.",err:error.message})
+                const {username, password, email, active} = req.body;
+                let modData = {}
+                if(username) modData.username = username;
+                if(password) modData.password = password;
+                if(email) modData.email = email;
+                if(active) modData.active = active;
+                const USERMOD = await Users.findOneAndUpdate({_id:id}, modData, {returnDocument:'after'});
+                if(!USERMOD) throw new Error("No fue posible actualizar el documento, verificar id o datos del request")
+                res.status(200).send({message:"Documento actualizado", output:USERMOD})
+            }catch(err){
+                res.status(400).send({message:"Error con la actualización del documento", error:err.message})
             }
-            
-        });
-
+        })
+        
         this.router.delete('/users/delete/:id', this.controller.deleteUser);
         
+
     }
 
     getRouter(){

@@ -22,6 +22,24 @@ class UserService{
         }
     }
 
+    static deleteRegister = async (id)=>{
+        try{
+            const deleteData = await Users.findOneAndDelete({_id:id});
+            return deleteData;
+        }catch(err){
+            console.error(err.message);
+        }
+
+    }
+    static updateRegister = async (id, data)=>{
+        try{
+            const usermod = await Users.findOneAndUpdate({_id:id}, data, {returnDocument:'after'});
+            return usermod;
+        }catch(err){
+            console.error('Error:', err.message);
+        }
+
+    }
 }
 
 
